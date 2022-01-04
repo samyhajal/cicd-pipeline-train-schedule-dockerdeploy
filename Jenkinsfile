@@ -8,14 +8,18 @@ pipeline {
         stage('Build Image') {
             steps {
                 echo 'Building Docker Image'
-                dockerImage = docker.build("samyhajal/train-schedule") 
+                script {
+                    dockerImage = docker.build("samyhajal/train-schedule") 
+                }    
             }
         }
         stage('Test Image') {  
             steps {
-                dockerImage.inside {
-                    sh 'echo "Tests passed"'        
-                }    
+                script {
+                    dockerImage.inside {
+                        sh 'echo "Tests passed"'        
+                    }
+                }
             }    
         }
         stage('Deploy Image') {
