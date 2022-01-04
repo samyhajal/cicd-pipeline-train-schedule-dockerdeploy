@@ -1,11 +1,31 @@
 pipeline {
+    environment {
+        registryCredential = 'docker_hub_id'
+        dockerImage = ''
+    }
     agent any
     stages {
-        stage('Build') {
+        stage('Build Image') {
             steps {
-                echo 'Running build automation'
-                sh './gradlew build --no-daemon'
-                archiveArtifacts artifacts: 'dist/trainSchedule.zip'
+                echo 'Building Docker Image'
+                dockerImage = docker.build("samyhajal/train-schedule") 
+            }
+        }
+        stage('Test Image') {  
+            steps {
+                dockerImage.inside {
+                    sh 'echo "Tests passed"'        
+                }    
+            }    
+        }
+        stage('Deploy Image') {
+            steps {
+                script {
+                    docker.withRegistry( '', registryCredential ) {
+                        dockerImage.push("${BUILD_NUMBER}")
+                        dockerImage.push('latest')
+                    }
+                }
             }
         }
     }
